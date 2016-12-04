@@ -5,10 +5,7 @@ import time
 
 class _163newsSpider(scrapy.Spider):
     name = "163news"
-    allowed_domains = ["www.163.com","baby.163.com","edu.163.com","ent.163.com",
-                       "house.163.com","money.163.com","news.163.com","play.163.com","tech.163.com",
-                       "sports.163.com","travel.163.com","war.163.com"
-                       ]
+    allowed_domains = ["163.com"]
     start_urls = [
     "http://www.163.com","http://baby.163.com","http://edu.163.com","http://ent.163.com",
     "http://house.163.com","http://money.163.com","http://news.163.com","http://play.163.com",

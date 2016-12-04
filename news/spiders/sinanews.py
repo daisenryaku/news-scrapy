@@ -3,16 +3,11 @@ import scrapy
 from news.items import NewsItem
 import time
 
-class qqnewsSpider(scrapy.Spider):
-    name = "qqnews"
-    allowed_domains = ["qq.com"]
+class SinanewsSpider(scrapy.Spider):
+    name = "sinanews"
+    allowed_domains = ["sina.com.cn"]
     start_urls = (
-        'http://www.qq.com/',
-        'http://news.qq.com/',
-        'http://finance.qq.com/',
-        'http://sports.qq.com/',
-        'http://ent.qq.com/',
-        'http://tech.qq.com/',
+        'http://www.sina.com.cn/',
     )
 
     def getStr(self,s):
@@ -32,15 +27,15 @@ class qqnewsSpider(scrapy.Spider):
     def parse(self, response):
         #li
         data = [sel.xpath("text()""|@href").extract() for sel in response.xpath('//li/a')]
-        data = [i for i in data if len(i) == 2 and len(i[1])>9 and 'htm' in i[0].split('.') or 'html' in i[0].split('.')]
+        data = [i for i in data if len(i) == 2 and len(i[1])>9 and 'shtml' in i[0].split('.')]
         #h2
         h2_data = [sel.xpath("text()""|@href").extract() for sel in response.xpath('//h2/a')]
-        h2_data = [i for i in h2_data if len(i) == 2 and 'html' in i[0].split('.') or 'html' in i[0].split('.')]
+        h2_data = [i for i in h2_data if len(i) == 2 and 'shtml' in i[0].split('.')]
         for i in h2_data:
             data.append(i)
         #h3
         h3_data = [sel.xpath("text()""|@href").extract() for sel in response.xpath('//h3/a')]
-        h3_data = [i for i in h3_data if len(i) == 2 and 'html' in i[0].split('.') or 'html' in i[0].split('.')]
+        h3_data = [i for i in h3_data if len(i) == 2 and 'shtml' in i[0].split('.')]
         for i in h3_data:
             data.append(i)
         #url

@@ -7,15 +7,20 @@ class _163newsSpider(scrapy.Spider):
     name = "163news"
     allowed_domains = ["163.com"]
     start_urls = [
-    "http://www.163.com","http://baby.163.com","http://edu.163.com","http://ent.163.com",
-    "http://house.163.com","http://money.163.com","http://news.163.com","http://play.163.com",
-    "http://tech.163.com","http://sports.163.com","http://travel.163.com","http://war.163.com",
+    "http://www.163.com",
+    #"http://news.163.com",
+    #"http://sports.163.com",
+    #"http://sports.163.com",
     ]
 
     def getStr(self,s):
         result = ''
         for i in s:
             if u'\u539f\u6807\u9898' in i:
+                #原标题
+                pass
+            elif u'productname' in i:
+                #过滤汽车广告,耦合性很差
                 pass
             else:
                 result += i
@@ -30,29 +35,49 @@ class _163newsSpider(scrapy.Spider):
         return s
 
     def filterUrl(self, urls):
-        return [x for x in urls if 'goal' not in x]
+        filter = ['goal','cai','corp','fa','vhouse','i.money','v.163.com','open']
+        result = []
+        for x in urls:
+            flag = 0
+            for f in filter:
+                if f in x:
+                    flag = 1
+                    break
+            if flag == 0:
+                result.append(x)
+        return result
 
     def parse(self, response):
+        #获得首页导航链接，继续爬
+        head_url = response.xpath('//*[@id="spWrapperHead"]/div[1]/div[2]/div/a/@href').extract()
+        head_url.append(response.url)
+        strong_url = response.xpath('//*[@id="spWrapperHead"]/div[1]/div[2]/div/strong/a/@href').extract()
+        for i in strong_url:
+            head_url.append(i)
+        for url in head_url:
+            yield scrapy.Request(url, callback=self.parse2)
+
+    def parse2(self, response):
         #li
         data = [sel.xpath("text()""|@href").extract() for sel in response.xpath('//li/a')]
-        data = [i for i in data if len(i) == 2 and len(i[1])>9 and 'htm' in i[0].split('.') or 'html' in i[0].split('.')]
+        data = [i for i in data if len(i) == 2 and len(i[1])>9 and 'html' in i[0].split('.')]
         #h2
         h2_data = [sel.xpath("text()""|@href").extract() for sel in response.xpath('//h2/a')]
-        h2_data = [i for i in h2_data if len(i) == 2 and 'html' in i[0].split('.')]
+        h2_data = [i for i in h2_data if len(i) == 2 and len(i[1])>9 and 'html' in i[0].split('.')]
         for i in h2_data:
             data.append(i)
         #h3
-        h3_data = [sel.xpath("text()""|@href").extract() for sel in response.xpath('//h3/a')]
-        h3_data = [i for i in h3_data if len(i) == 2 and 'html' in i[0].split('.')]
+        h3_data = [sel.xpath("text()""|@href").extract() for sel in response.xpath('//h3/a') ]
+        h3_data = [i for i in h3_data if len(i) == 2 and len(i[1])>9 and 'html' in i[0].split('.')]
         for i in h3_data:
             data.append(i)
         #url
         urls = [i[0] for i in data]
         urls = self.filterUrl(urls)
         for url in urls:
-            yield scrapy.Request(url, callback=self.parse2)
+            yield scrapy.Request(url, callback=self.parse3)
 
-    def parse2(self,response):
+    def parse3(self,response):
         item = NewsItem()
         #url
         item['news_url'] = response.url

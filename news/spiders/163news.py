@@ -8,9 +8,6 @@ class _163newsSpider(scrapy.Spider):
     allowed_domains = ["163.com"]
     start_urls = [
     "http://www.163.com",
-    #"http://news.163.com",
-    #"http://sports.163.com",
-    #"http://sports.163.com",
     ]
 
     def getStr(self,s):
@@ -89,16 +86,23 @@ class _163newsSpider(scrapy.Spider):
             item['news_title'] = title
         else:
             item['news_title'] = ''
-        #abstract
+        #abstract & body
         abstract = response.xpath('//p/text()').extract()
         if abstract != []:
             x = [self.cleanStr(i) for i in abstract if len(i.replace(' ','')) > 20]
             if x != []:
                 item['news_abstract'] = self.getStr(x)
+                s = ''
+                for i in x:
+                    s += i
+                item['news_body'] = s.replace(' ','').replace('\n','').replace('\t','')
             else:
                 item['news_abstract'] = title
+                item['news_body'] = title
         else:
             item['news_abstract'] = title
+            item['news_body'] = title
+
         #time
         item['news_time'] = time.time()
         yield item

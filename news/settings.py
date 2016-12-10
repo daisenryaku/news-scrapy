@@ -87,12 +87,13 @@ DEFAULT_REQUEST_HEADERS = {
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     'news.pipelines.MongoDBPipeline': 1,
+    #'news.pipelines.NewsPipeline': 1,
 }
 
 MONGODB_HOST = 'localhost' # Change in prod
 MONGODB_PORT = 27017 # Change in prod
-MONGODB_DATABASE = "findtrip" # Change in prod
-MONGODB_COLLECTION = "qua"
+MONGODB_DATABASE = "NEWS" # Change in prod
+MONGODB_COLLECTION = "news"
 MONGODB_USERNAME = "" # Change in prod
 MONGODB_PASSWORD = "" # Change in prod
 

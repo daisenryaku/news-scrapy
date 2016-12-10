@@ -2,7 +2,6 @@
 import csv
 import pymongo
 from scrapy.conf import settings
-from scrapy import log
 
 class NewsPipeline(object):
     def __init__(self):
@@ -35,5 +34,5 @@ class MongoDBPipeline(object):
         self.collection = db[settings['MONGODB_COLLECTION']]
 
     def process_item(self, item, spider):
-	pass
+        self.collection.insert(dict(item))
         return item

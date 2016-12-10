@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import csv
+import pymongo
+from scrapy.conf import settings
+from scrapy import log
 
 class NewsPipeline(object):
     def __init__(self):
@@ -20,3 +23,17 @@ class NewsPipeline(object):
 
                 spamwriter.writerow([title,url,abstract,body,time])
             return item
+
+
+class MongoDBPipeline(object):
+    def __init__(self):
+        connection = pymongo.MongoClient(
+            settings['MONGODB_SERVER'],
+            settings['MONGODB_PORT']
+        )
+        db = connection[settings['MONGODB_DATABASE']]
+        self.collection = db[settings['MONGODB_COLLECTION']]
+
+    def process_item(self, item, spider):
+	pass
+        return item

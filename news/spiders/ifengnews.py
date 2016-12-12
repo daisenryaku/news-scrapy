@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from news.items import NewsItem
-from news.dealstr import cleanStr,filterUrl,getStr
+from news.dealstr import cleanStr,getStr
+from news.dealurl import getUrl,filterUrl
 import time
 
 class IfengnewsSpider(scrapy.Spider):
@@ -13,11 +14,9 @@ class IfengnewsSpider(scrapy.Spider):
     filter = ['house','cp.ifeng','v.ifeng','jiu.ifeng','tuangou','phtv.ifeng','vip.v','vc.ifeng','fo.ifeng','jiangjia']
 
     def parse(self, response):
-        #获得首页导航链接，继续爬
-        head_url = response.xpath('//html/body/div/div/ul/li/a/@href').extract()
-        head_url.append(response.url)
-        head_url = filterUrl(head_url,self.filter)
-        for url in head_url:
+        match1 = '//html/body/div/div/ul/li/a/@href'
+        urls = getUrl(response, match1, [], self.filter)
+        for url in urls:
             yield scrapy.Request(url, callback=self.parse2)
 
     def parse2(self, response):

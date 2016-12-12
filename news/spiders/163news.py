@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from news.items import NewsItem
-from news.dealstr import cleanStr,filterUrl,getStr
+from news.dealstr import cleanStr,getStr
+from news.dealurl import getUrl,filterUrl
 import time
 
 class _163newsSpider(scrapy.Spider):
@@ -12,13 +13,10 @@ class _163newsSpider(scrapy.Spider):
     ]
 
     def parse(self, response):
-        #获得首页导航链接，继续爬
-        head_url = response.xpath('//*[@id="spWrapperHead"]/div[1]/div[2]/div/a/@href').extract()
-        head_url.append(response.url)
-        strong_url = response.xpath('//*[@id="spWrapperHead"]/div[1]/div[2]/div/strong/a/@href').extract()
-        for i in strong_url:
-            head_url.append(i)
-        for url in head_url:
+        match1 = '//*[@id="spWrapperHead"]/div[1]/div[2]/div/a/@href'
+        match2 = '//*[@id="spWrapperHead"]/div[1]/div[2]/div/strong/a/@href'
+        urls = getUrl(response, match1, match2, self.filter)
+        for url in urls:
             yield scrapy.Request(url, callback=self.parse2)
 
     def parse2(self, response):

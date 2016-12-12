@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from news.items import NewsItem
-from news.dealstr import cleanStr,filterUrl,getStr
+from news.dealstr import cleanStr,getStr
+from news.dealurl import getUrl,filterUrl
 import time
 
 class SinanewsSpider(scrapy.Spider):
@@ -10,17 +11,14 @@ class SinanewsSpider(scrapy.Spider):
     start_urls = (
         'http://www.sina.com.cn/',
     )
-    filter = ['vr.', 'mid/hot/','sports.sina.com.cn/l/']
+    filter = ['vr.', 'mid/hot/','sports.sina.com.cn/l/','astro']
 
     def parse(self, response):
         #获得首页导航链接，继续爬
-        url_1 = response.xpath('//div/div[@class="nav-mod-1"]/ul/li/a/@href').extract()
-        url_1.append(response.url)
-        url_2 = response.xpath('//div/div[@class="nav-mod-1 nav-w"]/ul/li/a/@href').extract()
-        for i in url_2:
-            url_1.append(i)
-        url_1 = filterUrl(url_1,self.filter)
-        for url in url_1:
+        match1 = '//div/div[@class="nav-mod-1"]/ul/li/a/@href'
+        match2 = '//div/div[@class="nav-mod-1 nav-w"]/ul/li/a/@href'
+        urls = getUrl(response, match1, match2, self.filter)
+        for url in urls:
             yield scrapy.Request(url, callback=self.parse2)
 
     def parse2(self, response):

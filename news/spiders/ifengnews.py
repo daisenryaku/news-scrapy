@@ -1,47 +1,22 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from news.items import NewsItem
+from news.dealstr import cleanStr,filterUrl,getStr
 import time
 
 class IfengnewsSpider(scrapy.Spider):
-    name = "ifengnews"
+    name = "ifeng"
     allowed_domains = ["ifeng.com"]
     start_urls = (
         'http://www.ifeng.com/',
     )
-
-    def getStr(self,s):
-        result = ''
-        for i in s:
-            result += i
-            if i[-1] == u'\u3002' or i[-1] == u'\uff1f':
-                break
-        return result
-
-    def cleanStr(self,s):
-        filter = [' ','\n',',',u'\u3000',']','\r']
-        for i in filter:
-            s = s.replace(i,'')
-        return s
-
-    def filterUrl(self, urls):
-        filter = ['house','cp.ifeng','v.ifeng','jiu.ifeng','tuangou','phtv.ifeng','vip.v','vc.ifeng','fo.ifeng','jiangjia']
-        result = []
-        for x in urls:
-            flag = 0
-            for f in filter:
-                if f in x:
-                    flag = 1
-                    break
-            if flag == 0:
-                result.append(x)
-        return result
+    filter = ['house','cp.ifeng','v.ifeng','jiu.ifeng','tuangou','phtv.ifeng','vip.v','vc.ifeng','fo.ifeng','jiangjia']
 
     def parse(self, response):
         #获得首页导航链接，继续爬
         head_url = response.xpath('//html/body/div/div/ul/li/a/@href').extract()
         head_url.append(response.url)
-        head_url = self.filterUrl(head_url)
+        head_url = filterUrl(head_url,self.filter)
         for url in head_url:
             yield scrapy.Request(url, callback=self.parse2)
 
@@ -61,7 +36,7 @@ class IfengnewsSpider(scrapy.Spider):
             data.append(i)
         #url
         urls = [i[0] for i in data]
-        urls = self.filterUrl(urls)
+        urls = filterUrl(urls,self.filter)
         for url in urls:
             yield scrapy.Request(url, callback=self.parse3)
 
@@ -80,10 +55,10 @@ class IfengnewsSpider(scrapy.Spider):
         #abstract & body
         abstract = response.xpath('//p/text()').extract()
         if abstract != []:
-            x = [self.cleanStr(i) for i in abstract if len(i.replace(' ','')) > 20]
+            x = [cleanStr(i) for i in abstract if len(i.replace(' ','')) > 20]
             x = [i for i in x if 'Copyright' not in i]
             if x != []:
-                item['news_abstract'] = self.getStr(x)
+                item['news_abstract'] = getStr(x)
                 s = ''
                 for i in x:
                     s += i

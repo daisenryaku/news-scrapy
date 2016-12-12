@@ -1,41 +1,16 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from news.items import NewsItem
+from news.dealstr import cleanStr,filterUrl,getStr
 import time
 
 class qqnewsSpider(scrapy.Spider):
-    name = "qqnews"
+    name = "qq"
     allowed_domains = ["qq.com"]
     start_urls = (
         'http://www.qq.com/',
     )
-
-    def getStr(self,s):
-        result = ''
-        for i in s:
-            result += i
-            if i[-1] == u'\u3002' or i[-1] == u'\uff1f':
-                break
-        return result
-
-    def cleanStr(self,s):
-        filter = [' ','\n',',',u'\u3000',']','\r']
-        for i in filter:
-            s = s.replace(i,'')
-        return s
-
-    def filterUrl(self, urls):
-        filter = ['v.qq','piao.qq','astro','gongyi','rudao','yunqi']
-        result = []
-        for x in urls:
-            flag = 0
-            for f in filter:
-                if f in x:
-                    flag = 1
-                    break
-            if flag == 0:
-                result.append(x)
-        return result
+    filter = ['v.qq','piao.qq','astro','gongyi','rudao','yunqi']
 
     def parse(self, response):
         #获得首页导航链接，继续爬
@@ -44,7 +19,7 @@ class qqnewsSpider(scrapy.Spider):
         strong_url = response.xpath('//*[@id="navBeta"]/div[1]/div/strong/a/@href').extract()
         for i in strong_url:
             head_url.append(i)
-        head_url = self.filterUrl(head_url)
+        head_url = filterUrl(head_url,self.filter)
         for url in head_url:
             yield scrapy.Request(url, callback=self.parse2)
 
@@ -64,7 +39,7 @@ class qqnewsSpider(scrapy.Spider):
             data.append(i)
         #url
         urls = [i[0] for i in data]
-        urls = self.filterUrl(urls)
+        urls = filterUrl(urls,self.filter)
         for url in urls:
             yield scrapy.Request(url, callback=self.parse3)
 
@@ -83,9 +58,9 @@ class qqnewsSpider(scrapy.Spider):
         #abstract & body
         abstract = response.xpath('//p/text()').extract()
         if abstract != []:
-            x = [self.cleanStr(i) for i in abstract if len(i.replace(' ','')) > 20]
+            x = [cleanStr(i) for i in abstract if len(i.replace(' ','')) > 20]
             if x != []:
-                item['news_abstract'] = self.getStr(x)
+                item['news_abstract'] = getStr(x)
                 s = ''
                 for i in x:
                     s += i

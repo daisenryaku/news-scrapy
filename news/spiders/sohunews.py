@@ -1,48 +1,22 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from news.items import NewsItem
+from news.dealstr import cleanStr,filterUrl,getStr
 import time
 
 class SohunewsSpider(scrapy.Spider):
-    name = "sohunews"
+    name = "sohu"
     allowed_domains = ["sohu.com"]
     start_urls = (
         'http://www.sohu.com/',
     )
-
-    def getStr(self,s):
-        result = ''
-        for i in s:
-            result += i
-            #以句号或者问号结束
-            if i[-1] == u'\u3002' or i[-1] == u'\uff1f' in i:
-                break
-        return result
-
-    def cleanStr(self,s):
-        filter = [' ','\n',',',u'\u3000',']','\r']
-        for i in filter:
-            s = s.replace(i,'')
-        return s
-
-    def filterUrl(self, urls):
-        #过滤不需要的corp财报
-        filter = ['corp','tv','db.auto','caipiao','tousu','pic.cul','fund','2sc']
-        result = []
-        for x in urls:
-            flag = 0
-            for f in filter:
-                if f in x:
-                    flag = 1
-                    break
-            if flag == 0:
-                result.append(x)
-        return result
+    filter = ['corp','tv','db.auto','caipiao','tousu','pic.cul','fund','2sc']
 
     def parse(self, response):
         #获得首页导航链接，继续爬
         url_1 = response.xpath('//*[@id="navList"]/div/ul/li/a/@href').extract()
         url_1.append(response.url)
+        url_1 = filterUrl(url_1,self.filter)
         for url in url_1:
             yield scrapy.Request(url, callback=self.parse2)
 
@@ -62,7 +36,7 @@ class SohunewsSpider(scrapy.Spider):
             data.append(i)
         #url
         urls = [i[0] for i in data]
-        urls = self.filterUrl(urls)
+        urls = filterUrl(urls,self.filter)
         for url in urls:
             yield scrapy.Request(url, callback=self.parse3)
 
@@ -82,9 +56,9 @@ class SohunewsSpider(scrapy.Spider):
         #abstract & body
         abstract = response.xpath('//p/text()').extract()
         if abstract != []:
-            x = [self.cleanStr(i) for i in abstract if len(i.replace(' ','')) > 20]
+            x = [cleanStr(i) for i in abstract if len(i.replace(' ','')) > 20]
             if x != []:
-                text = self.getStr(x)
+                text = getStr(x)
                 if u'\u3011' in text:
                     item['news_abstract'] = text.split(u'\u3011')[1]
                 else:

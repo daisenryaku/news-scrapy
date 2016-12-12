@@ -1,48 +1,15 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from news.items import NewsItem
+from news.dealstr import cleanStr,filterUrl,getStr
 import time
 
 class _163newsSpider(scrapy.Spider):
-    name = "163news"
+    name = "163"
     allowed_domains = ["163.com"]
     start_urls = [
     "http://www.163.com",
     ]
-
-    def getStr(self,s):
-        result = ''
-        for i in s:
-            if u'\u539f\u6807\u9898' in i:
-                #原标题
-                pass
-            elif u'productname' in i:
-                #过滤汽车广告,耦合性很差
-                pass
-            else:
-                result += i
-            if i[-1] == u'\u3002' or i[-1] == u'\uff1f':
-                break
-        return result
-
-    def cleanStr(self,s):
-        filter = [' ','\n',',',u'\u3000',']','\r']
-        for i in filter:
-            s = s.replace(i,'')
-        return s
-
-    def filterUrl(self, urls):
-        filter = ['goal','cai','corp','fa','vhouse','i.money','v.163.com','open']
-        result = []
-        for x in urls:
-            flag = 0
-            for f in filter:
-                if f in x:
-                    flag = 1
-                    break
-            if flag == 0:
-                result.append(x)
-        return result
 
     def parse(self, response):
         #获得首页导航链接，继续爬
@@ -70,7 +37,8 @@ class _163newsSpider(scrapy.Spider):
             data.append(i)
         #url
         urls = [i[0] for i in data]
-        urls = self.filterUrl(urls)
+        filter = ['goal','cai','corp','fa','vhouse','i.money','v.163.com','open']
+        urls = filterUrl(urls,filter)
         for url in urls:
             yield scrapy.Request(url, callback=self.parse3)
 
@@ -89,9 +57,11 @@ class _163newsSpider(scrapy.Spider):
         #abstract & body
         abstract = response.xpath('//p/text()').extract()
         if abstract != []:
-            x = [self.cleanStr(i) for i in abstract if len(i.replace(' ','')) > 20]
+            x = [cleanStr(i) for i in abstract if len(i.replace(' ','')) > 20]
             if x != []:
-                item['news_abstract'] = self.getStr(x)
+                #过滤原标题，汽车广告
+                abs_filter = [u'\u539f\u6807\u9898',u'productname']
+                item['news_abstract'] = getStr(x,abs_filter)
                 s = ''
                 for i in x:
                     s += i

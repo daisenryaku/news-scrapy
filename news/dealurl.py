@@ -3,15 +3,7 @@ import scrapy
 
 #Url过滤
 def filterUrl(urls,filter):
-    result = []
-    for x in urls:
-        flag = 0
-        for f in filter:
-            if f in x:
-                flag = 1
-                break
-        if flag == 0:
-            result.append(x)
+    result=[x for x in urls if x not in filter]
     return result
 
 #提取首页Url

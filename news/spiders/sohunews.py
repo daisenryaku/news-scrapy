@@ -13,14 +13,14 @@ class SohunewsSpider(scrapy.Spider):
     )
     filter = ['corp','tv','db.auto','caipiao','tousu','pic.cul','fund','2sc']
 
-    def parse(self, response):
+    def parse2(self, response):
         #获得首页导航链接，继续爬
         match1 = '//*[@id="navList"]/div/ul/li/a/@href'
         urls = getUrl(response, match1, [], self.filter)
         for url in urls:
             yield scrapy.Request(url, callback=self.parse2)
 
-    def parse2(self, response):
+    def parse(self, response):
         suffix = ['shtml']
         urls = textUrl(response,suffix)
         urls = filterUrl(urls,self.filter)

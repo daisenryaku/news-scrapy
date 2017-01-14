@@ -5,11 +5,19 @@ from news.dealstr import cleanStr,getStr
 from news.dealurl import getUrl,filterUrl,textUrl
 import time
 
-class XinhuaSpider(scrapy.Spider):
-    name = "xinhua"
-    allowed_domains = ["xinhuanet.com"]
+
+class YouthSpider(scrapy.Spider):
+    name = "youth"
+    allowed_domains = ["youth.cn"]
     start_urls = (
-        'http://www.xinhuanet.com/',
+        'http://www.youth.cn/',
+        'http://edu.youth.cn/',
+        'http://mil.youth.cn/',
+        'http://pinglun.youth.cn/',
+        'http://health.youth.cn/',
+        'http://news.youth.cn/',
+        'http://finance.youth.cn/',
+        'http://www.youth.cn/',
     )
     filter = []
 
@@ -30,6 +38,7 @@ class XinhuaSpider(scrapy.Spider):
             title = title[0].replace(',','').replace(' ','').replace('\n','')
             #标题过滤
             title = title.split('_')[0].split('-')[0].split('|')[0]
+            title = title.split(u'\u3011')[-1]
             item['news_title'] = title
         else:
             item['news_title'] = ''
@@ -41,6 +50,8 @@ class XinhuaSpider(scrapy.Spider):
                 text = getStr(x)
                 if u'\u3011' in text:
                     item['news_abstract'] = text.split(u'\u3011')[-1]
+                elif u'\uff09' in text:
+                    item['news_abstract'] = text.split(u'\uff09')[-1]
                 else:
                     item['news_abstract'] = text
                 #新闻正文

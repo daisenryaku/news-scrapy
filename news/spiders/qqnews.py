@@ -2,7 +2,7 @@
 import scrapy
 from news.items import NewsItem
 from news.dealstr import cleanStr,getStr
-from news.dealurl import getUrl,filterUrl
+from news.dealurl import getUrl,filterUrl,textUrl
 import time
 
 class qqnewsSpider(scrapy.Spider):
@@ -21,21 +21,8 @@ class qqnewsSpider(scrapy.Spider):
             yield scrapy.Request(url, callback=self.parse2)
 
     def parse2(self, response):
-        #li
-        data = [sel.xpath("text()""|@href").extract() for sel in response.xpath('//li/a')]
-        data = [i for i in data if len(i) == 2 and len(i[1])>9 and 'htm' in i[0].split('.') or 'html' in i[0].split('.')]
-        #h2
-        h2_data = [sel.xpath("text()""|@href").extract() for sel in response.xpath('//h2/a')]
-        h2_data = [i for i in h2_data if len(i) == 2 and len(i[1])>9 and 'htm' in i[0].split('.') or 'html' in i[0].split('.')]
-        for i in h2_data:
-            data.append(i)
-        #h3
-        h3_data = [sel.xpath("text()""|@href").extract() for sel in response.xpath('//h3/a')]
-        h3_data = [i for i in h3_data if len(i) == 2 and len(i[1])>9 and 'htm' in i[0].split('.') or 'html' in i[0].split('.')]
-        for i in h3_data:
-            data.append(i)
-        #url
-        urls = [i[0] for i in data]
+        suffix = ['html','htm']
+        urls = textUrl(response,suffix)
         urls = filterUrl(urls,self.filter)
         for url in urls:
             yield scrapy.Request(url, callback=self.parse3)
@@ -49,6 +36,8 @@ class qqnewsSpider(scrapy.Spider):
         if title != []:
             title = title[0].replace(',','').replace(' ','').replace('\n','')
             title = title.split('_')[0]
+            #过滤]符号
+            title = title.split(u'\u3011')[-1]
             item['news_title'] = title
         else:
             item['news_title'] = ''

@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 import scrapy
+from news.items import NewsItem
+from news.dealstr import cleanStr,getStr
+from news.dealurl import getUrl,filterUrl,textUrl
+import time
 
 
 class ChinaSpider(scrapy.Spider):

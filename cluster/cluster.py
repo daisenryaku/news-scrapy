@@ -22,10 +22,9 @@ def calc_hot(df,word_dict):
     return df
 
 def sort_hot(df):
-    return df.sort_values(by='hot',ascending = False)
-
-def change_index(df):
-    index = pd.Index(5)
+    df = df.sort_values(by='hot',ascending = False)
+    df = df.set_index([ range(len(df)) ])
+    return df
 
 def calc_dict(document,cutall=True):
     pat_num=re.compile(r'\d{2,}')
@@ -66,7 +65,8 @@ def calc_list(document,cutall=True):
 
     word_list += pat_en.findall(document)
     word_list += pat_num.findall(document)
-    word_list = list(set([x for x in word_list if x not in stopwords]))
+    word_list = [x for x in word_list if x not in stopwords]
+    word_list = list(set(word_list))
     return word_list
 
 def freq2vec(word_dict,word_list):
@@ -99,7 +99,7 @@ def build_doc(df):
 
 def build_vec(df,word_list):
     vec = []
-    for i,d in enumerate( df['title'] ):
+    for d in df['title']:
         d = d.decode('utf-8')
         word_dict = calc_dict(d)
         new_vec = freq2vec(word_dict,word_list)
@@ -128,13 +128,30 @@ word_list = calc_list(document)
 #sort df by hot
 df = calc_hot(df,word_dict)
 df = sort_hot(df)
-vec = build_vec(df,word_list)
-#print df['hot']
-x = vec[0]
-y = vec[1]
-print x
-print y
-print jaccard(x, y)
-print Euclidean(x,y)
-print Cosine(x,y)
 
+vec = build_vec(df,word_list)
+
+def Cosine_Cluster(vec):
+    for i in range(len(vec)):
+        for j in range(1,11):
+            x = vec[i]
+            if i+j < len(df):
+                y = vec[i+j]
+                if Cosine(x, y) > 0.5:
+                    print df['title'][i]
+                    print df['title'][j]
+                    print Cosine(x, y)
+
+def jaccard_Cluster(vec):
+    for i in range(len(vec)):
+        for j in range(1,11):
+            x = vec[i]
+            if i+j < len(df):
+                y = vec[i+j]
+                if jaccard(x,y) < 0.9:
+                    print df['title'][i]
+                    print df['title'][j]
+                    print jaccard(x, y)
+#Cosine_Cluster(vec)
+jaccard_Cluster(vec)
+print len(vec)

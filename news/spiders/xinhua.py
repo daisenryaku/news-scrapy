@@ -1,59 +1,52 @@
 # -*- coding: utf-8 -*-
 import scrapy
-from news.items import NewsItem
-from news.dealstr import cleanStr,getStr
-from news.dealurl import getUrl,filterUrl,textUrl
 import time
+from news.items import NewsItem
+from news.dealurl import textUrl
+from news.extractor import Extractor
 
 class XinhuaSpider(scrapy.Spider):
     name = "xinhua"
-    allowed_domains = ["xinhuanet.com"]
-    start_urls = (
-        'http://www.xinhuanet.com/',
-    )
-    filter = []
+    def __init__(self):
+        self.urlfilter = ['auto','house','caipiao','photo','video']
+
+    def start_requests(self):
+        urls = [
+            'http://www.xinhuanet.com/',
+            'http://www.news.cn/politics/',
+            'http://www.news.cn/world/index.htm',
+            'http://www.news.cn/fortune/',
+            'http://www.news.cn/local/index.htm',
+            'http://www.news.cn/legal/index.htm',
+            'http://www.news.cn/mil/index.htm',
+            'http://www.news.cn/sports/',
+            'http://ent.news.cn/',
+            'http://ent.news.cn/zx.htm',
+            'http://ent.news.cn/dy.htm',
+            'http://ent.news.cn/ds.htm',
+            'http://www.news.cn/politics/xhll.htm',
+            'http://www.news.cn/info/',
+            'http://www.news.cn/gangao/',
+            'http://www.news.cn/tw/',
+            'http://www.news.cn/fashion/',
+            'http://www.news.cn/tech/',
+        ]
+        for url in urls:
+            yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response):
         suffix = ['htm']
-        urls = textUrl(response,suffix)
-        urls = filterUrl(urls,self.filter)
+        urls = textUrl(response,suffix,self.urlfilter)
         for url in urls:
-            yield scrapy.Request(url, callback=self.parse3)
+            yield scrapy.Request(url, callback=self.parse2)
 
-    def parse3(self,response):
+    def parse2(self,response):
         item = NewsItem()
-        #url
+        ce = Extractor(response)
+        ce.execute()
+        item['news_title'] = ce.title
+        item['news_abstract'] = ce.abstract
+        item['news_body'] = ce.content
         item['news_url'] = response.url
-        #title
-        title = response.xpath('//title/text()').extract()
-        if title != []:
-            title = title[0].replace(',','').replace(' ','').replace('\n','')
-            #标题过滤
-            title = title.split('_')[0].split('-')[0].split('|')[0]
-            item['news_title'] = title
-        else:
-            item['news_title'] = ''
-        #abstract & body
-        abstract = response.xpath('//p/text()').extract()
-        if abstract != []:
-            x = [cleanStr(i) for i in abstract if len(i.replace(' ','')) > 20]
-            if x != []:
-                text = getStr(x)
-                if u'\u3011' in text:
-                    item['news_abstract'] = text.split(u'\u3011')[-1]
-                else:
-                    item['news_abstract'] = text
-                #新闻正文
-                s = ''
-                for i in x:
-                    s += i
-                item['news_body'] = s.replace(' ','').replace('\n','').replace('\t','')
-            else:
-                item['news_abstract'] = title
-                item['news_body'] = title
-        else:
-            item['news_abstract'] = title
-            item['news_body'] = title
-        #time
         item['news_time'] = time.time()
         yield item

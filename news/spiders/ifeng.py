@@ -5,23 +5,29 @@ from news.items import NewsItem
 from news.dealurl import textUrl
 from news.extractor import Extractor
 
-
-class ChinaSpider(scrapy.Spider):
-    name = "china"
+class IfengSpider(scrapy.Spider):
+    name = "ifeng"
     def __init__(self):
-        self.urlfilter = ['auto','lottery','astro','video','photo']
+        self.urlfilter = ['house','cp.ifeng','v.ifeng','jiu.ifeng', 'auto',
+        'tuangou','phtv.ifeng','vip.v','vc.ifeng','fo.ifeng','jiangjia','photo']
 
     def start_requests(self):
         urls = [
-            'http://www.china.com.cn/',
-            'http://news.china.com.cn/',
-            'http://finance.china.com.cn/',
-            'http://finance.china.com.cn/money/',
-            'http://finance.china.com.cn/stock/',
-            'http://finance.china.com.cn/industry/index.shtml',
-            'http://tech.china.com.cn/',
-            'http://tech.china.com.cn/it/',
-            'http://tech.china.com.cn/internet/s',
+        'http://www.ifeng.com/',
+        'http://news.ifeng.com/',
+        'http://news.ifeng.com/mainland/',
+        'http://news.ifeng.com/world/index.shtml',
+        'http://news.ifeng.com/taiwan/index.shtml',
+        'http://news.ifeng.com/hongkong/index.shtml',
+        'http://news.ifeng.com/mil/index.shtml',
+        'http://news.ifeng.com/society/index.shtml',
+        'http://finance.ifeng.com/',
+        'http://finance.ifeng.com/money/',
+        'http://ent.ifeng.com/',
+        'http://sports.ifeng.com/',
+        'http://fashion.ifeng.com/',
+        'http://tech.ifeng.com/',
+        'http://tech.ifeng.com/product/',
         ]
         for url in urls:
             yield scrapy.Request(url=url, callback=self.parse)

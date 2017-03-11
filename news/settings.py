@@ -10,6 +10,10 @@
 #     http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 
 BOT_NAME = 'news'
+LOG_ENABLED = True
+LOG_STDOUT = True
+LOG_LEVEL = 'ERROR'
+LOG_FILE = "log.txt"
 
 SPIDER_MODULES = ['news.spiders']
 NEWSPIDER_MODULE = 'news.spiders'

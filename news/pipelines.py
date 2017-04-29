@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import csv
 import pymongo
+import time
 from scrapy.conf import settings
 
 class NewsPipeline(object):
@@ -19,8 +20,9 @@ class NewsPipeline(object):
                 abstract = item['news_abstract'].encode('utf-8')
                 body = item['news_body'].encode('utf-8')
                 time = item['news_time']
+                topic = item['news_topic']
 
-                spamwriter.writerow([title,url,abstract,body,time])
+                spamwriter.writerow([title,url,abstract,body,time,topic])
             return item
 
 
@@ -34,7 +36,12 @@ class MongoDBPipeline(object):
         self.collection = db[settings['MONGODB_COLLECTION']]
 
     def process_item(self, item, spider):
-        if len(item['news_title']) > 5 and len(item['news_abstract']) > 10 and len(item['news_body']) > 80 and len(
-                item['news_title']) > 9:
-            self.collection.insert(dict(item))
+        if len(item['news_abstract']) > 10 and len(item['news_body']) > 80 and len(item['news_title']) > 9:
+            temp = self.collection.find({"news_url":item['news_url']})
+            # 如果Url存在，就更新时间
+            if temp:
+                self.collection.update_one({"news_url":item['news_url']},{'$set': {'news_updatetime': time.time()}})
+            else:
+            # Url不存在，直接插入
+                self.collection.insert(dict(item))
             return item

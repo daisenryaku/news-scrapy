@@ -9,11 +9,11 @@
 #     http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 #     http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'news'
-LOG_ENABLED = True
-LOG_STDOUT = True
-LOG_LEVEL = 'ERROR'
-LOG_FILE = "log.txt"
+#BOT_NAME = 'news'
+#LOG_ENABLED = True
+#LOG_STDOUT = True
+#LOG_LEVEL = 'ERROR'
+#LOG_FILE = "log.txt"
 
 SPIDER_MODULES = ['news.spiders']
 NEWSPIDER_MODULE = 'news.spiders'
@@ -90,8 +90,8 @@ DEFAULT_REQUEST_HEADERS = {
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    #'news.pipelines.MongoDBPipeline': 1,
-    'news.pipelines.NewsPipeline': 1,
+    'news.pipelines.MongoDBPipeline': 1,
+    #'news.pipelines.NewsPipeline': 1,
 }
 
 MONGODB_HOST = 'localhost' # Change in prod

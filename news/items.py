@@ -7,3 +7,5 @@ class NewsItem(scrapy.Item):
     news_abstract = scrapy.Field()
     news_body = scrapy.Field()
     news_time = scrapy.Field()
+    news_updatetime = scrapy.Field()
+    news_topic = scrapy.Field()
